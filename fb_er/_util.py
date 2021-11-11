@@ -15,6 +15,22 @@ USER_AGENTS = [
 FB_DTSG_REGEX = re.compile(r'name="fb_dtsg" value="(.*?)"')
 
 
+months = {
+    "January": "1",
+    "February":"2",
+    "March":"3",
+    "April":"4",
+    "May":"5",
+    "June":"6",
+    "July":"7",
+    "August":"8",
+    "September":"9",
+    "October":"10",
+    "November":"11",
+    "December":"12"
+}
+
+
 def get_group_graph_params(*args):
     params = {
         "av": args[0],
@@ -298,6 +314,19 @@ def find_specific_friend(typ, identity, friends):
 def graphql_query(session, params):
     r = session.post("https://m.facebook.com/api/graphql/", data=params)
     return r.json()
+
+
+def parse_bd(bd):
+    true_date = str(bd).split(",")[1]
+    day_ = true_date.split(" ")[1]
+    if len(day_) == 1:
+        day_ = f"0{day_}"
+    month_ = months[true_date.split(" ")[2]]
+    if len(month_) == 1:
+        month_ = f"0{month_}"
+    year_ = true_date.split(" ")[3]
+    return f"{year_}-{month_}-{day_}"
+
 
 def parse_group(json_):
     pass

@@ -2,7 +2,9 @@ import os
 import random
 import string
 import time
+import traceback
 
+from ics import Calendar, Event
 import magic
 import requests
 from requests_toolbelt import MultipartEncoder
@@ -25,12 +27,13 @@ def session_factory(user_agent=None, f=False, cookies=None, proxies=None):
 
     session = requests.session()
     session.headers["Referer"] = "https://m.facebook.com/"
-    session.headers["accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp," \
-                                "image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9 "
 
     # Some headers broke the login system,
     # so using f parameter , trying a dirty way to eliminate those headers while logging in
     if f is False:
+        session.headers["accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp," \
+                                    "image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9 "
+        session.headers['sec-fetch-mode'] = "navigate"
         session.headers['accept-encoding'] = "gzip, deflate, br"
         session.headers['upgrade-insecure-requests'] = "1"
         session.headers['cache-control'] = "max-age=0"
@@ -160,6 +163,25 @@ class Facebook:
                     return 0
             else:
                 raise ValueError("Please Provide cookies when using use_cookies=True")
+
+    @staticmethod
+    def __to_ics(resp,file_name,event_name_prefix=None):
+        c = Calendar()
+        if not event_name_prefix:
+            event_name_suffix = "Birthday Of"
+        for day in range(1,len(resp['birthdays'])):
+            for k, v in resp['birthdays'][day].items():
+                month = k
+                for j in v:
+                    name = j['name']
+                    bd = j['birthday']
+                    date_ = parse_bd(bd)
+                    e = Event()
+                    e.name = f"{event_name_suffix} {name}"
+                    e.begin = f'{date_} 00:00:00'
+                    c.events.add(e)
+        with open(f"{file_name}.ics", 'w',errors="ignore") as my_file:
+            my_file.writelines(c)
 
     def userinfo(self,user=None,timeline=None) -> dict:
         """
@@ -357,6 +379,7 @@ class Facebook:
             session.headers.pop('Referer')
             dots = 1
             print("[-] Fetching Birthdays.")
+            # session.headers.update({"sec-ch-ua-platform":"Windows","sec-fetch-dest":"document","sec-fetch-mode":'navigate',"sec-fetch-site":"same-origin"})
             r = session.get("https://m.facebook.com/events/calendar/birthdays/")
             bds = {'birthdays': []}
             print(f"\r[-] Creating Birthdays List{'.' * dots}", end="")
@@ -395,7 +418,7 @@ class Facebook:
                         print("\n[*] Successfully Created Birthdays List")
                         break
                     dots = dots + 1
-            print("\n[*] Successfully Birthdays Friend List")
+            print("\n[*] Successfully Created Birthdays Friend List")
             return bds
         else:
             return {"error":"Please Login First"}
@@ -574,4 +597,8 @@ class Facebook:
                 return f"[!] User {user} is not Found"
         else:
             return {"error":"Please Login First"}
+
+    def birthday_to_ics(self,filename,event_prefix=None):
+        bds = self.get_birthdays()
+        self.__to_ics(bds,filename,event_prefix)
 

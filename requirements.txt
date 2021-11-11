@@ -3,3 +3,4 @@ bs4
 magic
 requests_toolbelt
 cssutils
+ics

@@ -1,8 +1,8 @@
 # fb_er
 ## A Strong Facebook Scraper and Client
 > ### You can use cookies as well as your username and password to login
-
-> ### 2-Factor Authentication is also supported
+> ## Login with password is broken , working on fix
+> ### ~~2-Factor Authentication is also supported~~ (working on fix) 
 
 > ### Example:
 > Facebook("username/email/phone_number","password") <br/>
@@ -15,6 +15,7 @@
 * magic (Python Module)
 * requests_toolbelt (Python Module)
 * cssutils (Python Module)
+* ics (Python Module)
 > requirements.txt is also available
 
 
@@ -24,6 +25,7 @@
 * get_birthdays()
 * get_all_chats()
 * send_message()
+* birthday_to_ics()
 
 # Get User Info
 ## Description:
@@ -192,3 +194,24 @@ cookies = "cookies_value"
 user = Facebook(use_cookies=True, cookie=cookies)
 user.send_message("Facebook_user", "Hi Sending message using fb_er")
 ```
+
+# Birthday to ICS
+## Description:
+ICS is a CALENDER file which is supported by all major Calender , you can now get all the birthdays from of next year and import it to an ICS file , which then can be import to your favourite Calender App.
+## Required Parameters
+* filename : str [path] -> Path of file , where you want to create the ics file
+## Optional Parameter
+* event_prefix : str -> Prefix Title of Event , the script will automatically add the name of user at the end
+## Example:
+
+```python
+from fb_er.client import Facebook
+
+cookies = "cookies_value"
+user = Facebook(use_cookies=True, cookie=cookies)
+user.birthday_to_ics()
+```
+# Updates:
+## Update 0.1:
+* Fixed all known bugs except login
+* Added [birthday_to_ics](#birthday-to-ics) function , which can be used to import Facebook Birthdays to ICS
